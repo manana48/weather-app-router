@@ -1,98 +1,120 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState, useEffect } from 'react';
+import {
+  StyleSheet, Text, View,
+  TouchableOpacity, ActivityIndicator, Alert
+} from 'react-native';
+import * as Location from 'expo-location';
+import axios from 'axios';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const API_KEY = 'a5132e80459cfdf807bda944ecd835ea';
+const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
-export default function HomeScreen() {
+export default function TodayScreen() {
+  const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchWeatherByLocation();
+  }, []);
+
+  const fetchWeatherByLocation = async () => {
+    setLoading(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('위치 권한이 필요합니다');
+        setLoading(false);
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+      const res = await axios.get(API_URL, {
+        params: {
+          lat: latitude,
+          lon: longitude,
+          appid: API_KEY,
+          units: 'metric',
+          lang: 'kr'
+        }
+      });
+      setWeather(res.data);
+    } catch (e) {
+      console.log('에러:', e.response?.status, e.response?.data);
+      Alert.alert('날씨를 불러오지 못했어요 😢');
+    }
+    setLoading(false);
+  };
+
+  const getWeatherEmoji = (main) => {
+    const map = {
+      Clear: '☀️', Clouds: '☁️', Rain: '🌧️',
+      Snow: '❄️', Thunderstorm: '⛈️', Mist: '🌫️'
+    };
+    return map[main] || '🌈';
+  };
+
+  const getBackgroundColor = (main) => {
+    const map = {
+      Clear: '#87CEEB',       // 맑음 - 하늘색
+      Clouds: '#B0BEC5',      // 흐림 - 회색
+      Rain: '#546E7A',        // 비 - 어두운 청회색
+      Snow: '#E3F2FD',        // 눈 - 연한 파랑
+      Thunderstorm: '#37474F', // 천둥 - 어두운 회색
+      Mist: '#CFD8DC',        // 안개 - 연한 회색
+    };
+    return map[main] || '#EAF4FB';
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={[
+      styles.container,
+      { backgroundColor: weather ? getBackgroundColor(weather.weather[0].main) : '#EAF4FB' }
+    ]}>
+      <Text style={styles.title}>📍 현재 위치 날씨</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <TouchableOpacity style={styles.refreshButton} onPress={fetchWeatherByLocation}>
+        <Text style={styles.refreshText}>🔄 새로고침</Text>
+      </TouchableOpacity>
+
+      {loading && <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 40 }} />}
+
+      {!loading && weather && (
+        <View style={styles.weatherCard}>
+          <Text style={styles.emoji}>{getWeatherEmoji(weather.weather[0].main)}</Text>
+          <Text style={styles.cityName}>{weather.name}</Text>
+          <Text style={styles.temp}>{Math.round(weather.main.temp)}°C</Text>
+          <Text style={styles.desc}>{weather.weather[0].description}</Text>
+          <View style={styles.detailRow}>
+            <Text style={styles.detail}>💧 습도 {weather.main.humidity}%</Text>
+            <Text style={styles.detail}>💨 풍속 {weather.wind.speed}m/s</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detail}>🌡️ 최고 {Math.round(weather.main.temp_max)}°C</Text>
+            <Text style={styles.detail}>🌡️ 최저 {Math.round(weather.main.temp_min)}°C</Text>
+          </View>
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: { flex: 1, backgroundColor: '#EAF4FB', alignItems: 'center', paddingTop: 80 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16, color: '#2C3E50' },
+  refreshButton: {
+    backgroundColor: '#5DADE2', paddingVertical: 10, paddingHorizontal: 24,
+    borderRadius: 20, marginBottom: 32
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  refreshText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  weatherCard: {
+    backgroundColor: '#fff', borderRadius: 20, padding: 32,
+    alignItems: 'center', width: '85%',
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  emoji: { fontSize: 72, marginBottom: 8 },
+  cityName: { fontSize: 24, fontWeight: 'bold', color: '#2C3E50', marginBottom: 4 },
+  temp: { fontSize: 56, fontWeight: 'bold', color: '#4A90E2', marginBottom: 4 },
+  desc: { fontSize: 18, color: '#7F8C8D', marginBottom: 16, textTransform: 'capitalize' },
+  detailRow: { flexDirection: 'row', gap: 20, marginBottom: 8 },
+  detail: { fontSize: 15, color: '#555' },
 });
