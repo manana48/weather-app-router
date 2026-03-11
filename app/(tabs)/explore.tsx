@@ -1,11 +1,14 @@
+import axios from 'axios';
 import { useState } from 'react';
 import {
-  StyleSheet, Text, View, TextInput,
-  TouchableOpacity, ActivityIndicator, Alert
+  ActivityIndicator, Alert,
+  StyleSheet, Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import axios from 'axios';
 
-const API_KEY = 'a5132e80459cfdf807bda944ecd835ea';
+const API_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
 const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
 export default function SearchScreen() {

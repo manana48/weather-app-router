@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
-import {
-  StyleSheet, Text, View,
-  TouchableOpacity, ActivityIndicator, Alert
-} from 'react-native';
-import * as Location from 'expo-location';
 import axios from 'axios';
+import * as Location from 'expo-location';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator, Alert,
+  StyleSheet, Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
-const API_KEY = 'a5132e80459cfdf807bda944ecd835ea';
+const API_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
 const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
 export default function TodayScreen() {
