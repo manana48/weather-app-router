@@ -19,6 +19,14 @@ export default function TabLayout() {
           headerShown: false,
         }}
       />
+      <Tabs.Screen
+        name="forecast"
+        options={{
+          title: '예보',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>📅</Text>,
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }
