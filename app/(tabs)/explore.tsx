@@ -10,7 +10,7 @@ import {
 
 const API_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
 const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
-const GEO_URL = 'http://api.openweathermap.org/geo/1.0/direct';
+const GEO_URL = 'https://api.openweathermap.org/geo/1.0/direct';
 
 export default function SearchScreen() {
   const [weather, setWeather] = useState(null);
