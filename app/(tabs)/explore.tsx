@@ -27,7 +27,6 @@ export default function SearchScreen() {
       return;
     }
 
-    // 영문 입력시만 자동완성
     const isEnglish = /^[a-zA-Z\s]+$/.test(text);
     if (!isEnglish) {
       setSuggestions([]);
@@ -37,11 +36,7 @@ export default function SearchScreen() {
     try {
       setSearching(true);
       const res = await axios.get(GEO_URL, {
-        params: {
-          q: text,
-          limit: 5,
-          appid: API_KEY,
-        }
+        params: { q: text, limit: 5, appid: API_KEY }
       });
       setSuggestions(res.data);
     } catch (e) {
