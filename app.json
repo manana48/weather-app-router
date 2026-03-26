@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "weather-app-router",
-    "slug": "weather-app-router",
+    "name": "온도",
+    "slug": "ONDO",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,10 +14,8 @@
     "android": {
       "package": "com.manana48.weatherapp",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#3B8FE8"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
